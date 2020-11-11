@@ -1,11 +1,13 @@
-const express = require('express');
+const express = require("express");
 const app = express();
-const apiRouter = require('./routes/apiRouter');
-const {handleInternalError} = require('./controllers/errorhandling')
+const apiRouter = require("./routes/apiRouter");
+const { handle404s, handleInternalErr } = require("./controllers/errorhandling");
 
 app.use(express.json());
 
-app.use('/api', apiRouter);
+app.use("/api", apiRouter);
 
-app.use(handleInternalError);
+app.use(handle404s);
+app.use(handleInternalErr);
+
 module.exports = app;
