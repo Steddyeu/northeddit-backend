@@ -1,3 +1,5 @@
+//should be call create_articles_table
+
 exports.up = function (knex) {
   console.log("creating the articles table");
   return knex.schema.createTable("articles", (articleTable) => {

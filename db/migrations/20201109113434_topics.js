@@ -1,3 +1,4 @@
+//should be call create_topics_table
 
 exports.up = function(knex) {
   console.log('creating the topics table');

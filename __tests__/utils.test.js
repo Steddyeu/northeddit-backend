@@ -1,7 +1,6 @@
 const {
   formatDates,
   formatAuthor,
-  formatTitle,
   createTitleRef,
   formatComments,
 } = require("../db/utils/data-manipulation");
@@ -46,7 +45,7 @@ describe("formatted date", () => {
         created_at: 1479818163389,
       },
     ]);
-    const actualOutput = input[0].created_at;
+    const actualOutput = input[1].created_at;
     expect(actualOutput).toBeInstanceOf(Date);
   });
   test("Test that formatDates does not mutate the original array", () => {
@@ -60,8 +59,19 @@ describe("formatted date", () => {
         created_at: 1511354163389,
       },
     ];
+    const arrayObjCopy = [
+      {
+        body:
+          "Oh, I've got compassion running out of my nose, pal! I'm the Sultan of Sentiment!",
+        belongs_to: "They're not exactly dogs, are they?",
+        created_by: "butter_bridge",
+        votes: 16,
+        created_at: 1511354163389,
+      },
+    ];
+
     formatDates(arrayObj);
-    expect(arrayObj).toEqual(arrayObj);
+    expect(arrayObj).toEqual(arrayObjCopy);
   });
 });
 
@@ -142,92 +152,101 @@ describe("formatAuthor", () => {
         created_at: 1478813209256,
       },
     ];
+    const arrayObjCopy = [
+      {
+        body: "Nobis consequatur animi. Ullam nobis quaerat voluptates veniam.",
+        belongs_to: "Making sense of Redux",
+        created_by: "grumpy19",
+        votes: 7,
+        created_at: 1478813209256,
+      },
+    ];
     formatAuthor(arrayObj);
-    expect(arrayObj).toEqual(arrayObj);
+    expect(arrayObj).toEqual(arrayObjCopy);
   });
 });
 
 //<-------------->FORMAT TITLE<-------------->
 
-describe("formatTitle", () => {
-  test("Test that formatTitle returns a new array given an array as input", () => {
-    const input = [];
-    const expectedOutput = [];
-    const actualOutput = formatTitle(input);
-    expect(actualOutput).toEqual(expectedOutput);
-  });
-  test("Given an array with a single object as input we should return an array with belongs_to property replace with title", () => {
-    const input = [
-      {
-        body: "Nobis consequatur animi. Ullam nobis quaerat voluptates veniam.",
-        belongs_to: "Making sense of Redux",
-        author: "grumpy19",
-        votes: 7,
-        created_at: 1478813209256,
-      },
-    ];
-    const expectedOutput = [
-      {
-        body: "Nobis consequatur animi. Ullam nobis quaerat voluptates veniam.",
-        title: "Making sense of Redux",
-        author: "grumpy19",
-        votes: 7,
-        created_at: 1478813209256,
-      },
-    ];
-    expect(formatTitle(input)).toEqual(expectedOutput);
-  });
-  test("Given an array with multiple array objects as input we should return an array with belongs_to property replaced with title", () => {
-    const input = [
-      {
-        body: "Nobis consequatur animi. Ullam nobis quaerat voluptates veniam.",
-        belongs_to: "Making sense of Redux",
-        author: "grumpy19",
-        votes: 7,
-        created_at: 1478813209256,
-      },
-      {
-        body:
-          "Facilis corporis animi et non non minus nisi. Magnam et sequi dolorum fugiat ab assumenda.",
-        belongs_to: "Which current Premier League manager was the best player?",
-        author: "tickle122",
-        votes: 12,
-        created_at: 1468201097851,
-      },
-    ];
-    const expectedOutput = [
-      {
-        body: "Nobis consequatur animi. Ullam nobis quaerat voluptates veniam.",
-        title: "Making sense of Redux",
-        author: "grumpy19",
-        votes: 7,
-        created_at: 1478813209256,
-      },
-      {
-        body:
-          "Facilis corporis animi et non non minus nisi. Magnam et sequi dolorum fugiat ab assumenda.",
-        title: "Which current Premier League manager was the best player?",
-        author: "tickle122",
-        votes: 12,
-        created_at: 1468201097851,
-      },
-    ];
-    expect(formatTitle(input)).toEqual(expectedOutput);
-  });
-  test("Test that formatTitle does not mutate the original array", () => {
-    const arrayObj = [
-      {
-        body: "Nobis consequatur animi. Ullam nobis quaerat voluptates veniam.",
-        belongs_to: "Making sense of Redux",
-        author: "grumpy19",
-        votes: 7,
-        created_at: 1478813209256,
-      },
-    ];
-    formatTitle(arrayObj);
-    expect(arrayObj).toEqual(arrayObj);
-  });
-});
+// describe("formatTitle", () => {
+//   test("Test that formatTitle returns a new array given an array as input", () => {
+//     const input = [];
+//     const expectedOutput = [];
+//     const actualOutput = formatTitle(input);
+//     expect(actualOutput).toEqual(expectedOutput);
+//   });
+//   test("Given an array with a single object as input we should return an array with belongs_to property replace with title", () => {
+//     const input = [
+//       {
+//         body: "Nobis consequatur animi. Ullam nobis quaerat voluptates veniam.",
+//         belongs_to: "Making sense of Redux",
+//         author: "grumpy19",
+//         votes: 7,
+//         created_at: 1478813209256,
+//       },
+//     ];
+//     const expectedOutput = [
+//       {
+//         body: "Nobis consequatur animi. Ullam nobis quaerat voluptates veniam.",
+//         title: "Making sense of Redux",
+//         author: "grumpy19",
+//         votes: 7,
+//         created_at: 1478813209256,
+//       },
+//     ];
+//     expect(formatTitle(input)).toEqual(expectedOutput);
+//   });
+//   test("Given an array with multiple array objects as input we should return an array with belongs_to property replaced with title", () => {
+//     const input = [
+//       {
+//         body: "Nobis consequatur animi. Ullam nobis quaerat voluptates veniam.",
+//         belongs_to: "Making sense of Redux",
+//         author: "grumpy19",
+//         votes: 7,
+//         created_at: 1478813209256,
+//       },
+//       {
+//         body:
+//           "Facilis corporis animi et non non minus nisi. Magnam et sequi dolorum fugiat ab assumenda.",
+//         belongs_to: "Which current Premier League manager was the best player?",
+//         author: "tickle122",
+//         votes: 12,
+//         created_at: 1468201097851,
+//       },
+//     ];
+//     const expectedOutput = [
+//       {
+//         body: "Nobis consequatur animi. Ullam nobis quaerat voluptates veniam.",
+//         title: "Making sense of Redux",
+//         author: "grumpy19",
+//         votes: 7,
+//         created_at: 1478813209256,
+//       },
+//       {
+//         body:
+//           "Facilis corporis animi et non non minus nisi. Magnam et sequi dolorum fugiat ab assumenda.",
+//         title: "Which current Premier League manager was the best player?",
+//         author: "tickle122",
+//         votes: 12,
+//         created_at: 1468201097851,
+//       },
+//     ];
+//     expect(formatTitle(input)).toEqual(expectedOutput);
+//   });
+//   test("Test that formatTitle does not mutate the original array", () => {
+//     const arrayObj = [
+//       {
+//         body: "Nobis consequatur animi. Ullam nobis quaerat voluptates veniam.",
+//         belongs_to: "Making sense of Redux",
+//         author: "grumpy19",
+//         votes: 7,
+//         created_at: 1478813209256,
+// //       },
+//     ];
+//     formatTitle(arrayObj);
+//     expect(arrayObj).toEqual(arrayObj);
+//   });
+// });
 
 //<-------------->CREATETITLEREF<-------------->
 

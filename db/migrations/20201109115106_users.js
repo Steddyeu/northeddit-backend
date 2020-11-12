@@ -1,3 +1,4 @@
+//should be called create_users_table
 
 exports.up = function(knex) {
     console.log('creating the users table');
