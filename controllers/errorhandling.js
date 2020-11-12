@@ -9,7 +9,7 @@ exports.handlePSQLErrors = (err, req, res, next) => {
 };
 
 exports.handle404s = (req, res, next) => {
-  //console.log(res);
+  //cleconsole.log('404 errrMsg --->', res);
   res.status(404).send({ msg: "Not found" });
 };
 

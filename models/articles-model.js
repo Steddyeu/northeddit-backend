@@ -7,10 +7,8 @@ exports.removeArticleByArticleId = (article_id) => {
     .from("articles")
     .where("articles.article_id", "=", article_id)
     .then((delCount) => {
-      //console.log('models --->', delCount)
-      // if(delCount === 0) {
-      //   return Promise.reject({status:404, msg: 'Article not Found'})
-      // }
+      // console.log('models --->', delCount)
+      return delCount;
     });
 };
 
@@ -21,19 +19,31 @@ exports.updateVotesByArticleId = (newVotes, artId) => {
     .update({ votes: newVotes })
     .returning("*")
     .then((updatedArticleVotes) => {
-      //console.log('model --->', updatedArticleVotes)
+      // console.log('model --->', updatedArticleVotes)
       return updatedArticleVotes[0];
     });
 };
 
-
 exports.fetchArticleByArticleId = (artId) => {
-return connection 
-.from('articles')
-.where('article_id', '=', artId)
-.returning('*')
-.then((article) => {
- // console.log('model--->', article[0])
-  return article
-})
-}
+  return connection
+    .select("*")
+    .from("articles")
+    .where("article_id", "=", artId)
+    .then((article) => {
+      // console.log('model--->', article[0])
+      return article;
+    });
+};
+
+exports.insertCommentByArticleId = (artId, newComment) => {
+  //console.log('model comment', newComment)
+  //console.log('model', artId)
+  return connection
+    .insert(newComment)
+    .into("comments")
+    .returning('*')
+    .then((insertedComment) => {
+    //  console.log("insertedComment ---> ", insertedComment);
+      return insertedComment;
+    });
+};

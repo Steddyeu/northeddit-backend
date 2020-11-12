@@ -6,8 +6,8 @@ const connection = require("../db/data/connection");
 
 describe("/api", () => {
   afterAll(() => connection.destroy());
-  /////////////////////////////////////////////////////////////////////////////////////////
-  /////////////////////////////////////////////////////////////////////////////////////////
+  //beforeEach(() => connection.seed.run())
+
   //<--------------->GET TOPICS<--------------->
   describe("/topics", () => {
     test("GET responds with 200 when topics is requested and format is correct", () => {
@@ -15,7 +15,7 @@ describe("/api", () => {
         .get("/api/topics")
         .expect(200)
         .then((res) => {
-          //  console.log(res.body)
+          // console.log(res.body)
           expect(res.body.topics).toEqual(expect.any(Array));
           expect(Object.keys(res.body.topics[0])).toEqual(
             expect.arrayContaining(["description", "slug"])
@@ -35,8 +35,6 @@ describe("/api", () => {
         });
     });
   });
-  //////////////////////////////////////////////////////////////////////////////////////////
-  //////////////////////////////////////////////////////////////////////////////////////////
 
   //<--------------->GET USER BY USERNAME<--------------->
 
@@ -90,10 +88,10 @@ describe("/api", () => {
       //<--------------->ERROR HANDLING<--------------->
       test("STATUS 404 article_id doesnt exist", () => {
         return request(app)
-          .delete("/users/api/100000000")
+          .delete("/api/articles/100000000")
           .expect(404)
           .then(({ body }) => {
-            expect(body.msg).toBe("Not found");
+            expect(body.msg).toBe("article_id does not exist to delete");
           });
       });
     });
@@ -102,46 +100,47 @@ describe("/api", () => {
   //<--------------->PATCH ARTICLE BY ARTICLE ID<--------------->
   describe("/articles", () => {
     describe("/articles/article_id", () => {
-      test("STATUS 200 when successful patch on votes is performed", () => {
+      test("PATCH STATUS 200 when successful patch on votes is performed", () => {
         return request(app)
           .patch("/api/articles/2")
           .send({ votes: 10 })
           .expect(200)
           .then(({ body }) => {
-            //console.log(body.article.votes)
+            // console.log(body.article)
             expect(body.article.votes).toBe(10);
             expect(body.article.article_id).toBe(2);
           });
       });
+      //<--------------->ERROR HANDLING<--------------->
+      test("STATUS 400 for invalid update request", () => {
+        return request(app)
+          .patch("/api/articles/2")
+          .send({ votes: "bananna" })
+          .expect(400)
+          .then(({ body }) => {
+            expect(body.msg).toBe("Bad Request");
+          });
+      });
+      test("STATUS 400 for invalid endpoint", () => {
+        return request(app)
+          .patch("/api/articles/bananna")
+          .send({ votes: 10 })
+          .expect(400)
+          .then(({ body }) => {
+            expect(body.msg).toBe("Bad Request");
+          });
+      });
+      test("STATUS 404 for two rows", () => {
+        return request(app)
+          .patch("/api/treasures/articles")
+          .send({ votes: 10, article_id: 2 })
+          .expect(404)
+          .then(({ body }) => {
+            expect(body.msg).toBe("Not found");
+          });
+      });
     });
-    //<--------------->ERROR HANDLING<--------------->
-    test("STATUS 400 for invalid update request", () => {
-      return request(app)
-        .patch("/api/articles/2")
-        .send({ votes: "bananna" })
-        .expect(400)
-        .then(({ body }) => {
-          expect(body.msg).toBe("Bad Request");
-        });
-    });
-    test("STATUS 400 for invalid endpoint", () => {
-      return request(app)
-        .patch("/api/articles/bananna")
-        .send({ votes: 10 })
-        .expect(400)
-        .then(({ body }) => {
-          expect(body.msg).toBe("Bad Request");
-        });
-    });
-    test("STATUS 404 for two rows", () => {
-      return request(app)
-        .patch("/api/treasures/articles")
-        .send({ votes: 10, article_id: 2 })
-        .expect(404)
-        .then(({ body }) => {
-          expect(body.msg).toBe("Not found");
-        });
-    });
+
     describe("/articles/:article_id", () => {
       test("GET responds with 200 when articles is requested by article ID and format is correct", () => {
         return request(app)
@@ -175,35 +174,55 @@ describe("/api", () => {
             );
           });
       });
-    });
-    //<--------------->ERROR HANDLING<--------------->
+      //<--------------->ERROR HANDLING<--------------->
 
-    test("STATUS: 400, Invalid endpoint", () => {
+      test("STATUS: 400, Invalid endpoint", () => {
+        return request(app)
+          .get("/api/articles/sausage")
+          .expect(400)
+          .then(({ body }) => {
+            //console.log('err ----->', body)
+            expect(body.msg).toBe("Bad Request");
+          });
+      });
+      test("STATUS: 404, Invalid endpoint", () => {
+        return request(app)
+          .get("/api/article/3")
+          .expect(404)
+          .then(({ body }) => {
+            //console.log('err ----->', body)
+            expect(body.msg).toBe("Not found");
+          });
+      });
+      test("STATUS: 404, article Id does not exist in the database", () => {
+        return request(app)
+          .get("/api/articles/30000")
+          .expect(404)
+          .then(({ body }) => {
+            // console.log('err ----->', body)
+            expect(body.msg).toBe("Article not Found");
+          });
+      });
+    });
+  });
+  //<--------------->POST ARTICLE BY ARTICLE ID<--------------->
+  describe("/articles/:article_id/comments", () => {
+    test("POST responds with Status 201 when comment is posted using articleId", () => {
       return request(app)
-        .get("/api/articles/sausage")
-        .expect(400)
+        .post("/api/articles/3/comments")
+        .send({
+          body: "my Posted comment",
+          author: "butter_bridge",
+        })
+        .expect(201)
         .then(({ body }) => {
-          //console.log('err ----->', body)
-          expect(body.msg).toBe("Bad Request");
+        //  console.log("testBody ---->", body);
+          expect(body.newComment[0].body).toBe('my Posted comment')
+          expect(body.newComment[0].author).toBe('butter_bridge')
+
         });
-      })
-    test("STATUS: 404, Invalid endpoint", () => {
-      return request(app)
-        .get("/api/article/3")
-        .expect(404)
-        .then(({ body }) => {
-          //console.log('err ----->', body)
-          expect(body.msg).toBe("Not found");
-        });
-    })
-    test("STATUS: 400, Invalid endpoint", () => {
-      return request(app)
-        .get("/api/articles/30000")
-        .expect(404)
-        .then(({ body }) => {
-          //console.log('err ----->', body)
-          expect(body.msg).toBe("Not found");
-        });
-    })
+    });
   });
 });
+
+
