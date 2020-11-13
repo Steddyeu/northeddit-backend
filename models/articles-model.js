@@ -60,7 +60,7 @@ exports.fetchCommentsByArticleId = (artId) => {
     });
 };
 
-exports.fetchArticles = ({ sort_by, order, query }) => {
+exports.fetchArticles = ({ sort_by, order, author, topic }) => {
   //console.log('model--->', artId)
   return connection
     .select(
@@ -77,8 +77,26 @@ exports.fetchArticles = ({ sort_by, order, query }) => {
     .groupBy("articles.article_id")
     .orderBy(sort_by || "created_at", order || "asc")
     .then((articles) => {
-      if (query)
-        // console.log("model ---->", articles);
+      if (author) {
+        let authArr = [];
+        articles.map((article) => {
+          if (article.author === author) {
+            authArr.push(article);
+          }
+        });
+        // console.log("model--->", authArr);
+        return authArr;
+      } else if (topic) {
+        let topicArr = [];
+        articles.map((article) => {
+          if (article.topic === topic) {
+            topicArr.push(article);
+          }
+        });
+       // console.log("model--->", topicArr);
+        return topicArr;
+      } else {
         return articles;
+      }
     });
 };

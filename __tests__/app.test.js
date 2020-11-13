@@ -345,11 +345,20 @@ describe("/api", () => {
     });
     test("when queried with a authors, returns the objects of author", () => {
       return request(app)
-        .get("/api/articled?author")
+        .get("/api/articles?author=icellusedkars")
         .expect(200)
         .then((res) => {
-          console.log('author query --->', res.body.articles[0]);
-         // expect(res.body.articles[0]).toBe("");
+          //console.log("author query --->", res.body);
+           expect(res.body.articles[0].author).toBe("icellusedkars");
+        });
+    });
+    test("when queried with a topics, returns the objects of topics", () => {
+      return request(app)
+        .get("/api/articles?topic=mitch")
+        .expect(200)
+        .then((res) => {
+          //console.log("topic query --->", res.body);
+          expect(res.body.articles[0].topic).toBe("mitch");
         });
     });
 
