@@ -48,12 +48,13 @@ exports.insertCommentByArticleId = (artId, newComment) => {
     });
 };
 
-exports.fetchCommentsByArticleId = (artId) => {
+exports.fetchCommentsByArticleId = (artId, {sort_by, order}) => {
   // console.log('artId ---->', artId)
   return connection
     .select("*")
     .from("comments")
     .where("article_id", "=", artId)
+    .orderBy(sort_by || "created_at", order || "asc")
     .then((comments) => {
       // console.log("models --->", comments);
       return comments[0];
@@ -93,7 +94,7 @@ exports.fetchArticles = ({ sort_by, order, author, topic }) => {
             topicArr.push(article);
           }
         });
-       // console.log("model--->", topicArr);
+        // console.log("model--->", topicArr);
         return topicArr;
       } else {
         return articles;

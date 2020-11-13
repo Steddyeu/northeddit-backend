@@ -6,7 +6,7 @@ const connection = require("../db/data/connection");
 
 describe("/api", () => {
   afterAll(() => connection.destroy());
-  beforeEach(() => connection.seed.run())
+  beforeEach(() => connection.seed.run());
 
   //<--------------->GET TOPICS<--------------->
   describe("/topics", () => {
@@ -205,7 +205,7 @@ describe("/api", () => {
       });
     });
   });
-  //<--------------->POST ARTICLE BY ARTICLE ID<--------------->
+  //<--------------->POST ARTICLE BY ARTICLE ID + queries<--------------->
   describe("/articles/:article_id/comments", () => {
     test("POST responds with Status 201 when comment is posted using articleId", () => {
       return request(app)
@@ -266,6 +266,26 @@ describe("/api", () => {
                 "body",
               ])
             );
+          });
+      });
+      test("that default sorting order is date", () => {
+      return request(app)
+        .get("/api/articles/5/comments")
+        .expect(200)
+        .then((res) => {
+         // console.log('----->', res.body.comment)
+          expect(res.body).toBeSortedBy("created_at", {
+            coerce: true,
+          });
+        });
+      })
+      test("SORT_BY that default SORT_BY that treasures can be sorted by given column when column is passed as a query order is date", () => {
+        return request(app)
+          .get("/api/articles/5/comments?sort_by=votes")
+          .expect(200)
+          .then((res) => {
+            //console.log('----->', res.body.articles)
+            expect(res.body).toBeSortedBy("votes");
           });
       });
 
@@ -349,7 +369,7 @@ describe("/api", () => {
         .expect(200)
         .then((res) => {
           //console.log("author query --->", res.body);
-           expect(res.body.articles[0].author).toBe("icellusedkars");
+          expect(res.body.articles[0].author).toBe("icellusedkars");
         });
     });
     test("when queried with a topics, returns the objects of topics", () => {
@@ -449,6 +469,18 @@ describe("/api", () => {
         .expect(404)
         .then(({ body }) => {
           expect(body.msg).toBe("comment_id does not exist to delete");
+        });
+    });
+  });
+
+  //<--------------->GET API <--------------->
+  describe.only("GET /api", () => {
+    test("GET responds with 200 when API is requested and format is correct", () => {
+      return request(app)
+        .get("/api/")
+        .expect(200)
+        .then((res) => {
+          console.log('test --->', res)
         });
     });
   });

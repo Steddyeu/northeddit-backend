@@ -63,7 +63,8 @@ exports.postCommentByArticleId = (req, res, next) => {
 
 exports.getCommentsByArticleId = (req, res, next) => {
   const artId = req.params.article_id;
-  fetchCommentsByArticleId(artId)
+  const sort_by = req.query
+  fetchCommentsByArticleId(artId, sort_by)
     .then((comment) => {
       // console.log(comment);
       if (comment === undefined) {
