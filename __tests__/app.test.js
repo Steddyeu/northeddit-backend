@@ -6,7 +6,7 @@ const connection = require("../db/data/connection");
 
 describe("/api", () => {
   afterAll(() => connection.destroy());
-  //beforeEach(() => connection.seed.run())
+  beforeEach(() => connection.seed.run())
 
   //<--------------->GET TOPICS<--------------->
   describe("/topics", () => {
@@ -216,13 +216,231 @@ describe("/api", () => {
         })
         .expect(201)
         .then(({ body }) => {
-        //  console.log("testBody ---->", body);
-          expect(body.newComment[0].body).toBe('my Posted comment')
-          expect(body.newComment[0].author).toBe('butter_bridge')
+          //  console.log("testBody ---->", body);
+          expect(body.newComment[0].body).toBe("my Posted comment");
+          expect(body.newComment[0].author).toBe("butter_bridge");
+        });
+    });
 
+    //<--------------->ERROR HANDLING<--------------->
+    test("STATUS 400 when missing column, eg author", () => {
+      return request(app)
+        .post("/api/articles/3/comments")
+        .send({
+          body: "error Posted comment",
+          //author: "butter_bridge",
+        })
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).toBe("Row not Found");
+        });
+    });
+    test("STATUS 404 when adding incorrect value to key", () => {
+      return request(app)
+        .post("/api/article/3/comments")
+        .send({
+          body: "error Posted comment",
+          author: "butter_bridge",
+        })
+        .expect(404)
+        .then(({ body }) => {
+          expect(body.msg).toBe("Not found");
+        });
+    });
+
+    describe("Get /articles/:article_id/comments", () => {
+      test("GET responsed with 200 when comments are requested with article_id", () => {
+        return request(app)
+          .get("/api/articles/5/comments")
+          .expect(200)
+          .then(({ body }) => {
+            // console.log("test--->", body.comment);
+            expect(body.comment.article_id).toBe(5);
+            expect(Object.keys(body.comment)).toEqual(
+              expect.arrayContaining([
+                "comment_id",
+                "author",
+                "article_id",
+                "votes",
+                "created_at",
+                "body",
+              ])
+            );
+          });
+      });
+
+      //<--------------->ERROR HANDLING<--------------->
+      test("", () => {});
+      test("status 404 path not found", () => {
+        return request(app)
+          .get("/api/articles/5/comment")
+          .expect(404)
+          .then(({ body }) => {
+            //console.log('err ----->', body)
+            expect(body.msg).toBe("Not found");
+          });
+      });
+      test("status 400 article_id does not exist", () => {
+        return request(app)
+          .get("/api/articles/1000000/comments")
+          .expect(400)
+          .then(({ body }) => {
+            //console.log('err ----->', body)
+            expect(body.msg).toBe("article_id does not exist");
+          });
+      });
+    });
+  });
+
+  //<--------------->GET ARTICLES + QUERIES<--------------->
+
+  describe("/api/articles", () => {
+    test('"GET responds with 200 when articles is requested and format is correct"', () => {
+      return request(app)
+        .get("/api/articles")
+        .expect(200)
+        .then((res) => {
+          // console.log("test ---->", res.body);
+          expect(res.body.articles).toEqual(expect.any(Array));
+          expect(res.body.articles[0]).toHaveProperty("author");
+          expect(res.body.articles[0]).toHaveProperty("title");
+          expect(res.body.articles[0]).toHaveProperty("topic");
+          expect(res.body.articles[0]).toHaveProperty("created_at");
+          expect(res.body.articles[0]).toHaveProperty("votes");
+          expect(res.body.articles[0]).toHaveProperty("comment_count");
+          expect(res.body.articles[0]).toHaveProperty("article_id");
+        });
+    });
+    test("that default sorting order is date", () => {
+      return request(app)
+        .get("/api/articles")
+        .expect(200)
+        .then((res) => {
+          //console.log('----->', res.body.articles)
+          expect(res.body.articles).toBeSortedBy("created_at", {
+            coerce: true,
+          });
+        });
+    });
+    test("SORT_BY that default SORT_BY that treasures can be sorted by given column when column is passed as a query order is date", () => {
+      return request(app)
+        .get("/api/articles?sort_by=votes")
+        .expect(200)
+        .then((res) => {
+          //console.log('----->', res.body.articles)
+          expect(res.body.articles).toBeSortedBy("votes");
+        });
+    });
+    test("DESC that articles can be ordered in descending order by given column when column is passed as a query", () => {
+      return request(app)
+        .get("/api/articles?order=desc")
+        .expect(200)
+        .then((res) => {
+          //  console.log("--->", res.body.articles)
+          expect(res.body.articles).toBeSortedBy("created_at", {
+            descending: true,
+            coerce: true,
+          });
+        });
+    });
+    test("when queried with a authors, returns the objects of author", () => {
+      return request(app)
+        .get("/api/articled?author")
+        .expect(200)
+        .then((res) => {
+          console.log('author query --->', res.body.articles[0]);
+         // expect(res.body.articles[0]).toBe("");
+        });
+    });
+
+    //<------------------->ERROR HANDLING<------------------>
+    test("responds 400 for invalid sortBy column", () => {
+      return request(app)
+        .get("/api/articles?sort_by=sausages")
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).toBe("Bad Request");
+        });
+    });
+    test("status:405, INVALID METHODS", () => {
+      const invalidMethods = ["patch", "put", "delete"];
+      const methodPromises = invalidMethods.map((method) => {
+        return request(app)
+          [method]("/api/articles")
+          .expect(405)
+          .then(({ body }) => {
+            expect(body.msg).toBe("Method Not Allowed");
+          });
+      });
+      return Promise.all(methodPromises);
+    });
+  });
+
+  //<--------------->PATCH COMMENTS BY COMMENT ID <--------------->
+
+  describe("PATCH /api/comments/:comment_id", () => {
+    test("STATUS 200 when successful patch request is performed", () => {
+      return request(app)
+        .patch("/api/comments/5")
+        .send({ votes: 30 })
+        .expect(200)
+        .then(({ body }) => {
+          //console.log(body);
+          expect(body.comment.votes).toBe(30);
+          expect(body.comment.comment_id).toBe(5);
+        });
+    });
+
+    //<------------------->ERROR HANDLING<------------------>
+
+    test("STATUS 400 for invalid update request", () => {
+      return request(app)
+        .patch("/api/comments/5")
+        .send({ votes: "bananna" })
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).toBe("Bad Request");
+        });
+    });
+    test("STATUS 400 for invalid endpoint", () => {
+      return request(app)
+        .patch("/api/comments/bananna")
+        .send({ votes: 10 })
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).toBe("Bad Request");
+        });
+    });
+  });
+
+  //<--------------->DELETE COMMENTS BY COMMENT ID <--------------->
+
+  describe("DELETE /api/comments/:comment_id", () => {
+    test("DELETE 204 when successful delete request is performed", () => {
+      return request(app)
+        .delete("/api/comments/15")
+        .expect(204)
+        .then(() => {
+          return connection
+            .select("*")
+            .from("comments")
+            .where("comments.comment_id", "=", 15);
+        })
+        .then((comments) => {
+          //  console.log('test--->', comments)
+          expect(comments).toEqual([]);
+        });
+    });
+
+    //<------------------->ERROR HANDLING<------------------>
+
+    test("STATUS 404 article_id doesnt exist", () => {
+      return request(app)
+        .delete("/api/comments/100000000")
+        .expect(404)
+        .then(({ body }) => {
+          expect(body.msg).toBe("comment_id does not exist to delete");
         });
     });
   });
 });
-
-

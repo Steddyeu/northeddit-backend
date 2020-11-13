@@ -41,9 +41,44 @@ exports.insertCommentByArticleId = (artId, newComment) => {
   return connection
     .insert(newComment)
     .into("comments")
-    .returning('*')
+    .returning("*")
     .then((insertedComment) => {
-    //  console.log("insertedComment ---> ", insertedComment);
+      //  console.log("insertedComment ---> ", insertedComment);
       return insertedComment;
+    });
+};
+
+exports.fetchCommentsByArticleId = (artId) => {
+  // console.log('artId ---->', artId)
+  return connection
+    .select("*")
+    .from("comments")
+    .where("article_id", "=", artId)
+    .then((comments) => {
+      // console.log("models --->", comments);
+      return comments[0];
+    });
+};
+
+exports.fetchArticles = ({ sort_by, order, query }) => {
+  //console.log('model--->', artId)
+  return connection
+    .select(
+      "articles.author",
+      "articles.title",
+      "articles.article_id",
+      "articles.topic",
+      "articles.created_at",
+      "articles.votes"
+    )
+    .from("articles")
+    .count("comment_id AS comment_count")
+    .leftJoin("comments", "articles.article_id", "=", "comments.article_id")
+    .groupBy("articles.article_id")
+    .orderBy(sort_by || "created_at", order || "asc")
+    .then((articles) => {
+      if (query)
+        // console.log("model ---->", articles);
+        return articles;
     });
 };

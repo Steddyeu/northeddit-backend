@@ -3,6 +3,8 @@ const {
   updateVotesByArticleId,
   fetchArticleByArticleId,
   insertCommentByArticleId,
+  fetchCommentsByArticleId,
+  fetchArticles,
 } = require("../models/articles-model");
 
 exports.deleteArticleByArticleId = (req, res, next) => {
@@ -19,7 +21,7 @@ exports.deleteArticleByArticleId = (req, res, next) => {
     .catch(next);
 };
 
-exports.PatchVotesByArticleid = (req, res, next) => {
+exports.patchVotesByArticleid = (req, res, next) => {
   // console.log('controller--->', req.params.article_id)
   // console.log('contVotes --->', req.body)
   const artId = req.params.article_id;
@@ -50,6 +52,35 @@ exports.postCommentByArticleId = (req, res, next) => {
   const newComment = req.body;
   const artId = req.params.article_id;
   insertCommentByArticleId(artId, newComment).then((newComment) => {
-    res.status(201).send({ newComment });
+    //console.log('newcomm', newComment[0])
+    if (newComment[0].author === null) {
+      res.status(400).send({ msg: "Row not Found" });
+    } else {
+      res.status(201).send({ newComment });
+    }
   });
+};
+
+exports.getCommentsByArticleId = (req, res, next) => {
+  const artId = req.params.article_id;
+  fetchCommentsByArticleId(artId)
+    .then((comment) => {
+      // console.log(comment);
+      if (comment === undefined) {
+        res.status(400).send({ msg: "article_id does not exist" });
+      } else {
+        res.status(200).send({ comment });
+      }
+    })
+    .catch(next);
+};
+
+exports.getArticles = (req, res, next) => {
+  //console.log("controller --->", req.query);
+  const sort_by = req.query
+  fetchArticles(sort_by)
+    .then((articles) => {
+      res.status(200).send({ articles });
+    })
+    .catch(next);
 };
