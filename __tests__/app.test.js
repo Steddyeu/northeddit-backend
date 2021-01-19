@@ -342,7 +342,7 @@ describe("/api", () => {
           });
         });
     });
-    test("SORT_BY that default SORT_BY that treasures can be sorted by given column when column is passed as a query order is date", () => {
+    test("SORT_BY that default SORT_BY that articles can be sorted by given column when column is passed as a query order is date", () => {
       return request(app)
         .get("/api/articles?sort_by=votes")
         .expect(200)
@@ -474,14 +474,14 @@ describe("/api", () => {
   });
 
   //<--------------->GET API <--------------->
-  describe.only("GET /api", () => {
-    test("GET responds with 200 when API is requested and format is correct", () => {
-      return request(app)
-        .get("/api/")
-        .expect(200)
-        .then((res) => {
-          console.log('test --->', res)
-        });
-    });
-  });
+//   describe.only("GET /api", () => {
+//     test("GET responds with 200 when API is requested and format is correct", () => {
+//       return request(app)
+//         .get("/api/")
+//         .expect(200)
+//         .then((res) => {
+//           console.log('test --->', res.body)
+//         });
+//     });
+//   });
 });

@@ -4,7 +4,7 @@ const usersRouter = require("./usersRouter");
 const articlesRouter = require("./articlesRouter");
 const commentsRouter = require("./commentsRouter");
 
-const { getApi } = require("../controllers/api-controller");
+//const { getApi } = require("../controllers/api-controller");
 
 apiRouter.use("/topics", topicsRouter);
 
@@ -14,6 +14,8 @@ apiRouter.use("/articles", articlesRouter);
 
 apiRouter.use("/comments", commentsRouter);
 
-apiRouter.use("/").get(getApi);
+apiRouter
+  .route("/")
+  .get((req, res) => res.send({ ok: true }))
 
 module.exports = apiRouter;
